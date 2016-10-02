@@ -2,7 +2,11 @@
 
 import json
 import argparse
+import os, os.path
+import threading
+import time
 from pprint import pprint
+import concurrent.futures
 
 def getAllAddrs(data):
     all_addresses = {}
@@ -40,22 +44,24 @@ def crawl(json_data):
             else: continue
     return success,skipped,error
 
-def main():
-    parser = argparse.ArgumentParser()
-    parser.add_argument('-file',type=str,action='store',default='Internet/Internet_1.json',
-                        help='file path')
-    args = parser.parse_args()
+def worker(file_path):
 
 
-    data=getData(args.file)
+    data=getData('Internet/'+file_path)
     success,skipped,error= crawl(data)
 
+    print('\n'+file_path)
     print("\nSuccess:\n")
     print success
     print("\nSkipped:\n")
     print skipped
     print("\nError:\n")
     print error
+
+def main():
+    files=[name for name in os.listdir('Internet') if name.endswith('.json')]
+    with concurrent.futures.ThreadPoolExecutor(max_workers=len(files)) as executor:
+        crawl = {executor.submit(worker(f)): f for f in files}
 
 
 if __name__ == '__main__':
