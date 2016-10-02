@@ -1,13 +1,11 @@
 #! /usr/bin/env python
 
 import json
-import argparse
 import os, os.path
-import threading
-import time
 from pprint import pprint
 import concurrent.futures
 
+# get all valid addresses
 def getAllAddrs(data):
     all_addresses = {}
     for i in range(len(data['pages'])):
@@ -16,12 +14,14 @@ def getAllAddrs(data):
         all_addresses[address]= links
     return all_addresses
 
+# read data from Internet directory
 def getData(file_path):
     with open(file_path) as data_file:
         data = json.load(data_file)
     data_file.close()
     return data
 
+# perform a dfs search
 def crawl(json_data):
     data=json_data
     all_addresses = getAllAddrs(data)
@@ -44,12 +44,14 @@ def crawl(json_data):
             else: continue
     return success,skipped,error
 
+# worker main
 def worker(file_path):
 
 
-    data=getData('Internet/'+file_path)
-    success,skipped,error= crawl(data)
+    data=getData('Internet/'+file_path) # get data
+    success,skipped,error= crawl(data) # process
 
+    # print results
     print('\n'+file_path)
     print("\nSuccess:\n")
     print success
@@ -57,6 +59,7 @@ def worker(file_path):
     print skipped
     print("\nError:\n")
     print error
+
 
 def main():
     files=[name for name in os.listdir('Internet') if name.endswith('.json')]
